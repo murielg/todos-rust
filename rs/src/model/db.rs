@@ -18,9 +18,10 @@ const PG_APP_MAX_CON: u32 = 5;
 const SQL_DIR: &str = "sql/";
 const SQL_RECREATE: &str = "sql/00-recreate-db.sql";
 
+// typealias DB
 pub type Db = Pool<Postgres>;
 
-pub async fn init_db() -> Result<Db, sqlx::Error> {
+pub async fn init_db() -> Result<Db, Error> {
     // -- Create the db with PG_ROOT (dev only)
     {
         let root_db = new_db_pool(PG_HOST, PG_ROOT_DB, PG_ROOT_USER, PG_ROOT_PWD, 1).await?;
@@ -48,7 +49,7 @@ pub async fn init_db() -> Result<Db, sqlx::Error> {
     new_db_pool(PG_HOST, PG_APP_DB, PG_APP_USER, PG_APP_PWD, PG_APP_MAX_CON).await
 }
 
-async fn pexec(db: &Db, file: &str) -> Result<(), sqlx::Error> {
+async fn pexec(db: &Db, file: &str) -> Result<(), Error> {
     // Read file
     let content = fs::read_to_string(file).map_err(|ex| {
         println!("ERR reading {} (cause: {:?}", file, ex);
@@ -78,7 +79,7 @@ async fn new_db_pool(
     user: &str,
     pwd: &str,
     max_con: u32,
-) -> Result<Db, sqlx::Error> {
+) -> Result<Db, Error> {
     let con_string = format!("postgres://{}:{}@{}/{}", user, pwd, host, db);
     PgPoolOptions::new()
         .max_connections(max_con)
